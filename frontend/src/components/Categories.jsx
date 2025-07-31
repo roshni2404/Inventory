@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 const Categories = () => {
     const [categoryName, setCategoryName] = useState("");
@@ -17,9 +18,9 @@ const Categories = () => {
     
        
         if (response.data.success) {
-            alert("Category added successfully!");
             setCategoryName("");
             setCategoryDescription("");
+            alert("Category added successfully!");
         } else {
             console.error("Error adding category:", data);
             alert("Error adding category. Please try again."); 
