@@ -31,9 +31,9 @@ const Login = () => {
             if (response.data.success) {
                 await login(response.data.user, response.data.token);
                 if (response.data.user.role === "admin") {
-                    navigate("/admin/dashboard");
+                    navigate("/admin-dashboard");
                 } else {
-                    navigate("/customer/dashboard");
+                    navigate("/customer-dashboard");
                 }
 
             } else {

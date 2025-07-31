@@ -4,6 +4,29 @@ import axios from 'axios';
 const Categories = () => {
     const [categoryName, setCategoryName] = useState("");
     const [categoryDescription, setCategoryDescription] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+     useEffect(() => {
+        const fetchCategories = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get("http://localhost:3000/api/category", {
+                    headers: { 
+                        Authorization: `Bearer ${localStorage.getItem('pos-token')}`,
+                    },
+                });
+                console.log(response.data.categories);
+                setCategories(response.data.categories);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                setLoading(false);
+            }
+        };
+
+        fetchCategories();
+     })
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,7 +50,9 @@ const Categories = () => {
         }
     };
 
-    return (
+    if(loading) return <div>Loading ....</div>
+
+    return ( 
         <div className='p-4'>
 
             <h1 className='text-2xl font-bold mb-8'>Category Management</h1>
@@ -48,15 +73,20 @@ const Categories = () => {
                     </form>
 
                 </div>
+                </div>
 
-                <div>
+                <div className='lg:w-2/3'>
+                <div className='bg-white shadow-md rounded-lg p-4'>
+                    <h2 className='text-center text-xl font-bold mb-4'></h2>
+                </div>
+
 
                 </div>
             </div>
 
 
 
-        </div>
+        
 
     )
 }
