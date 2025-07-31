@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const Categories = () => {
@@ -6,88 +6,194 @@ const Categories = () => {
     const [categoryDescription, setCategoryDescription] = useState("");
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [editCategory, setEditCategory] = useState(null);
 
-     useEffect(() => {
-        const fetchCategories = async () => {
-            setLoading(true);
-            try {
-                const response = await axios.get("http://localhost:3000/api/category", {
-                    headers: { 
-                        Authorization: `Bearer ${localStorage.getItem('pos-token')}`,
-                    },
-                });
-                console.log(response.data.categories);
-                setCategories(response.data.categories);
-                setLoading(false);
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-                setLoading(false);
-            }
-        };
-
-        fetchCategories();
-     })
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const response = await axios.post("http://localhost:3000/api/category/add", {categoryName, categoryDescription},
-            {
-                headers: { 
+    const fetchCategories = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get("http://localhost:3000/api/category", {
+                headers: {
                     Authorization: `Bearer ${localStorage.getItem('pos-token')}`,
-            },
-        }
-
-         );
-    
-       
-        if (response.data.success) {
-            setCategoryName("");
-            setCategoryDescription("");
-            alert("Category added successfully!");
-        } else {
-            console.error("Error adding category:", data);
-            alert("Error adding category. Please try again."); 
+                },
+            });
+            setCategories(response.data.categories);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    if(loading) return <div>Loading ....</div>
+    useEffect(() => {
+        fetchCategories();
+    }, []);
 
-    return ( 
-        <div className='p-4'>
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editCategory) {
+                const response = await axios.put(
+                    `http://localhost:3000/api/category/${editCategory}`,
+                    { categoryName, categoryDescription },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('pos-token')}`,
+                        },
+                    }
+                );
+                if (response.data.success) {
+                    alert("Category updated successfully!");
+                    setCategoryName("");
+                    setCategoryDescription("");
+                    setEditCategory(null);
+                    fetchCategories();
+                }
+            } else {
+                const response = await axios.post(
+                    "http://localhost:3000/api/category/add",
+                    { categoryName, categoryDescription },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('pos-token')}`,
+                        },
+                    }
+                );
+                if (response.data.success) {
+                    alert("Category added successfully!");
+                    setCategoryName("");
+                    setCategoryDescription("");
+                    fetchCategories();
+                }
+            }
+        } catch (error) {
+            console.error("Error saving category:", error);
+            alert("Error saving category!");
+        }
+    };
 
-            <h1 className='text-2xl font-bold mb-8'>Category Management</h1>
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this category?")) return;
 
-            <div className='flex flex-col lg:flex-row gap-4'></div>
+        try {
+            const response = await axios.delete(`http://localhost:3000/api/category/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('pos-token')}`,
+                },
+            });
+            if (response.data.success) {
+                alert("Category deleted successfully!");
+                setCategories(categories.filter((cat) => cat._id !== id));
+            }
+        } catch (error) {
+            console.error("Error deleting category:", error);
+        }
+    };
 
-            <div className='lg:w-1/3'> 
-                <div className='bg-white p-4 shadow-md rounded-lg p-4'>
-                    <h2 className='text-center text-xl font-bold mb-4'>Add Category</h2>
-                    <form className='space-y-4' onSubmit={handleSubmit}>
-                        <div>
-                            <input type="text" placeholder="Category Name" className='border w-full p-2 rounded-md' onChange={(e) => setCategoryName(e.target.value)}/>
-                        </div>
-                        <div>
-                            <input type="text" placeholder="Category Description" className="border w-full p-2 rounded-md" onChange={(e) => setCategoryDescription(e.target.value)} />
-                        </div>
-                        <button type="submit" className='w-full rounded-md bg-green-500 text-white p-3 cursor-pointer'>Add Category</button>
-                    </form>
+    const handleEdit = (category) => {
+        setEditCategory(category._id);
+        setCategoryName(category.categoryName);
+        setCategoryDescription(category.categoryDescription);
+    };
 
+    const handleCancel = () => {
+        setEditCategory(null);
+        setCategoryName("");
+        setCategoryDescription("");
+    };
+
+    if (loading) return <div className="p-4">Loading ....</div>;
+
+    return (
+        <div className="p-6">
+            <h1 className="text-3xl font-bold mb-8">Category Management</h1>
+
+            <div className="flex flex-col lg:flex-row gap-8">
+                {/* Form Section */}
+                <div className="lg:w-[400px]">
+                    <div className="bg-white p-6 shadow-lg rounded-md">
+                        <h2 className="text-center text-2xl font-semibold mb-4">
+                            {editCategory ? "Edit Category" : "Add Category"}
+                        </h2>
+                        <form className="space-y-4" onSubmit={handleSubmit}>
+                            <input
+                                type="text"
+                                value={categoryName}
+                                placeholder="Category Name"
+                                className="border w-full p-2 rounded-md"
+                                onChange={(e) => setCategoryName(e.target.value)}
+                                required
+                            />
+                            <input
+                                type="text"
+                                value={categoryDescription}
+                                placeholder="Category Description"
+                                className="border w-full p-2 rounded-md"
+                                onChange={(e) => setCategoryDescription(e.target.value)}
+                                required
+                            />
+                            <div className="flex space-x-2">
+                                <button
+                                    type="submit"
+                                    className="w-1/2 rounded-md bg-green-500 text-white p-3 cursor-pointer hover:bg-green-600"
+                                >
+                                    {editCategory ? "Save Changes" : "Add Category"}
+                                </button>
+                                {editCategory && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancel}
+                                        className="w-1/2 rounded-md bg-red-500 text-white p-3 cursor-pointer hover:bg-red-600"
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                </div>
 
-                <div className='lg:w-2/3'>
-                <div className='bg-white shadow-md rounded-lg p-4'>
-                    <h2 className='text-center text-xl font-bold mb-4'></h2>
-                </div>
-
-
+                {/* Table Section */}
+                <div className="flex-1">
+                    <div className="bg-white shadow-lg rounded-md p-6">
+                        {/* <h2 className="text-center text-2xl font-semibold mb-4">Categories</h2> */}
+                        <table className="w-full border border-gray-200 text-center">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="border border-gray-200 p-2">S No</th>
+                                    <th className="border border-gray-200 p-2">Category Name</th>
+                                    <th className="border border-gray-200 p-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {categories.map((category, index) => (
+                                    <tr key={category._id}>
+                                        <td className="border border-gray-200 p-2">{index + 1}</td>
+                                        <td className="border border-gray-200 p-2">{category.categoryName}</td>
+                                        <td className="border border-gray-200 p-2">
+                                            <div className="flex justify-center space-x-2">
+                                                <button
+                                                    onClick={() => handleEdit(category)}
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(category._id)}
+                                                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+        </div>
+    );
+};
 
-
-
-        
-
-    )
-}
 export default Categories;
