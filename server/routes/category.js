@@ -1,10 +1,19 @@
 import express from 'express';
-import { addCategory, getCategories } from '../controllers/categoryController.js';
+import { addCategory, getCategories, updateCategory, deleteCategory } from '../controllers/categoryController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/add',authMiddleware, addCategory);
+// Add new category
+router.post('/add', authMiddleware, addCategory);
+
+// Get all categories
 router.get('/', authMiddleware, getCategories);
+
+// Update category (use dynamic id)
+router.put('/:id', authMiddleware, updateCategory);
+
+// Delete category (optional)
+router.delete('/:id', authMiddleware, deleteCategory);
 
 export default router;
