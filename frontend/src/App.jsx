@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import ProtectedRoutes from './utils/ProtectedRoutes';
 import Dashboard from './pages/Dashboard';
 import Categories from './components/Categories';
+import Suppliers from './components/Suppliers';
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
             {<h1>Products</h1>} />
 
           <Route path='suppliers' element=
-            {<h1>Suppliers</h1>} />
+            {<Suppliers />} />
 
           <Route path='orders' element=
             {<h1>Orders</h1>} />

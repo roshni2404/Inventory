@@ -234,6 +234,10 @@
 
 
 
+
+
+
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -248,14 +252,14 @@ const Categories = () => {
     const fetchCategories = async () => {
         setLoading(true);
         try {
-            const response = await axios.get("http://localhost:5000/api/category", {
+            const response = await axios.get("http://localhost:3000/api/category", {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
                 },
             });
-            setCategories(response.data.categories);
+            setCategories(response.data.categories || []);
         } catch (error) {
-            console.error("Error fetching categories:", error);
+            console.error("Error fetching categories:", error.response?.data || error);
         } finally {
             setLoading(false);
         }
@@ -272,7 +276,7 @@ const Categories = () => {
             if (editCategory) {
                 // Update
                 const response = await axios.put(
-                    `http://localhost:5000/api/category/${editCategory}`,
+                    `http://localhost:3000/api/category/${editCategory}`,
                     { categoryName, categoryDescription },
                     {
                         headers: {
@@ -287,13 +291,11 @@ const Categories = () => {
                     setCategoryDescription("");
                     alert("Category updated successfully!");
                     fetchCategories();
-                } else {
-                    alert("Error editing category. Please try again.");
                 }
             } else {
                 // Add
                 const response = await axios.post(
-                    "http://localhost:5000/api/category/add",
+                    "http://localhost:3000/api/category/add",
                     { categoryName, categoryDescription },
                     {
                         headers: {
@@ -310,34 +312,33 @@ const Categories = () => {
                 }
             }
         } catch (error) {
-            console.error("Error saving category:", error);
+            console.error("Error saving category:", error.response?.data || error);
             alert("Error saving category!");
         }
     };
 
     // Delete Category
     const handleDelete = async (id) => {
-        const confirmDelete = window.confirm(
-            "Are you sure you want to delete this category?"
-        );
+        const confirmDelete = window.confirm("Are you sure you want to delete this category?");
         if (!confirmDelete) return;
 
         try {
             const response = await axios.delete(
-                `http://localhost:5000/api/category/${id}`,
+                `http://localhost:3000/api/category/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
                     },
                 }
             );
+
             if (response.data.success) {
                 alert("Category deleted successfully!");
                 setCategories(categories.filter((cat) => cat._id !== id));
             }
         } catch (error) {
-            console.error("Error deleting category:", error);
-            alert("Error deleting category. Please try again.");
+            console.error("Error deleting category:", error.response?.data || error);
+            alert("Error deleting category!");
         }
     };
 
@@ -361,10 +362,10 @@ const Categories = () => {
         <div className="p-6">
             <h1 className="text-2xl font-bold mb-8">Category Management</h1>
 
-            <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-6">
                 {/* Form Section */}
                 <div className="lg:w-1/3">
-                    <div className="bg-white shadow-md rounded-lg p-4">
+                    <div className="bg-white shadow-md rounded-lg p-6">
                         <h2 className="text-center text-xl font-bold mb-4">
                             {editCategory ? "Edit Category" : "Add Category"}
                         </h2>
@@ -413,6 +414,7 @@ const Categories = () => {
                 {/* Table Section */}
                 <div className="flex-1">
                     <div className="bg-white shadow-lg rounded-md p-6">
+                        {/* <h2 className="text-xl font-bold mb-4 text-center">Categories</h2> */}
                         <table className="w-full border border-gray-200 text-center">
                             <thead className="bg-gray-100">
                                 <tr>
@@ -425,9 +427,7 @@ const Categories = () => {
                                 {categories.map((category, index) => (
                                     <tr key={category._id}>
                                         <td className="border border-gray-200 p-2">{index + 1}</td>
-                                        <td className="border border-gray-200 p-2">
-                                            {category.categoryName}
-                                        </td>
+                                        <td className="border border-gray-200 p-2">{category.categoryName}</td>
                                         <td className="border border-gray-200 p-2">
                                             <div className="flex justify-center space-x-2">
                                                 <button
@@ -446,6 +446,13 @@ const Categories = () => {
                                         </td>
                                     </tr>
                                 ))}
+                                {categories.length === 0 && (
+                                    <tr>
+                                        <td colSpan="3" className="p-4 text-gray-500">
+                                            No categories found.
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -456,3 +463,4 @@ const Categories = () => {
 };
 
 export default Categories;
+
