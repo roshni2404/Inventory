@@ -1,3 +1,4 @@
+import Category from '../models/Category.js';
 import Supplier from '../models/Supplier.js';
 
 // Add Category
@@ -26,5 +27,13 @@ const addSupplier = async (req, res) => {
 };
 
 
-
-export { addSupplier };
+const getSuppliers = async (req, res) => {
+    try {
+        const suppliers = await Supplier.find();
+        return res.status(200).json({ success: true, suppliers });
+    } catch (error) {
+        console.error('Error fetching suppliers:', error);
+        return res.status(500).json({success: false, message: 'Server error in getting suppliers'});
+    }
+}
+export { addSupplier , getSuppliers };
