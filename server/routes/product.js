@@ -9,7 +9,7 @@ router.post('/add', authMiddleware, addProduct);
 router.get('/', authMiddleware, getProducts);
 // router.put('/:id', authMiddleware, updateSupplier);
 // router.delete('/:id', authMiddleware, deleteSupplier);
-
+ 
 export default router;
 
 

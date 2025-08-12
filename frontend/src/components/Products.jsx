@@ -5,61 +5,141 @@ const Products = () => {
     const [openModal, setOpenModal] = useState(false);
     const [categories, setCategories] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
+    const [products, setProducts] = useState([]); // ✅ products ka state
+    const [formData, setFormData] = useState({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+        supplier: "",
+    });
 
-    const fetchProducts = async () => {
+    // Fetch categories
+    const fetchCategories = async () => {
         try {
-            const response = await axios.get("/api/products", {
+            const res = await axios.get("http://localhost:3000/api/category", {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
                 },
             });
+            if (res.data.success) { // ✅ 'response' → 'res'
+                setCategories(res.data.categories || []);
+            }
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+            setCategories([]);
+        }
+    };
 
-            setSuppliers(response.data.suppliers);
-            setCategories(response.data.categories);
+    // Fetch suppliers
+    const fetchSuppliers = async () => {
+        try {
+            const res = await axios.get("http://localhost:3000/api/supplier", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
+                },
+            });
+            if (res.data.success) { // ✅ 'response' → 'res'
+                setSuppliers(res.data.suppliers || []);
+            }
         } catch (error) {
             console.error("Error fetching suppliers:", error);
+            setSuppliers([]);
+        }
+    };
+
+    // Fetch products
+    const fetchProducts = async () => {
+        try {
+            const res = await axios.get("http://localhost:3000/api/products", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
+                },
+            });
+            if (res.data.success) {
+                setProducts(res.data.products || []);
+            }
+        } catch (error) {
+            console.error("Error fetching products:", error);
+            setProducts([]);
         }
     };
 
     useEffect(() => {
+        fetchCategories();
+        fetchSuppliers();
         fetchProducts();
     }, []);
 
-
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-           
-                const response = await axios.post(
-                    "http://localhost:3000/api/products/add",
-                    formData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
-                        },
-                    }
-                );
-                if (response.data.success) {
-                    // fetchSuppliers();
-                    alert("Products added successfully!");
-                    openModal(false);
-                    setFormData({
-                        name: "",
-                        description: "",
-                        price: "",
-                        stock: "",
-                        categoryId: "",
-                        supplierId: "",
+            // Backend schema ke field names ke according payload
+            const payload = {
+                name: formData.name,
+                description: formData.description,
+                price: Number(formData.price),
+                stock: Number(formData.stock),
+                categoryId: formData.category, // ✅ backend ke field ka naam
+                supplierId: formData.supplier, // ✅ backend ke field ka naam
+            };
 
-                    });
-                } else {
-                    alert("Error adding Product. Please try again.");
-                
+            const res = await axios.post(
+                "http://localhost:3000/api/products/add",
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
+                    },
+                }
+            );
+
+            if (res.data.success) {
+                alert("Product added successfully!");
+                setOpenModal(false);
+                setFormData({
+                    name: "",
+                    description: "",
+                    price: "",
+                    stock: "",
+                    category: "",
+                    supplier: "",
+                });
+                fetchProducts(); // ✅ product list refresh
+            } else {
+                alert("Error adding product. Please try again.");
             }
-            
         } catch (error) {
-            alert("Error saving supplier. Please try again.");
+            console.error("Add Product Error:", error);
+            alert("Error adding product. Please try again.");
+        }
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            const res = await axios.delete(
+                `http://localhost:3000/api/products/${id}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
+                    },
+                }
+            );
+            if (res.data.success) {
+                alert("Product deleted successfully!");
+                fetchProducts();
+            }
+        } catch (error) {
+            console.error("Delete Product Error:", error);
         }
     };
 
@@ -72,7 +152,6 @@ const Products = () => {
                     type="text"
                     placeholder="Search"
                     className="border p-1 bg-white rounded px-4"
-                // onChange={handleSearch}
                 />
                 <button
                     className="px-4 py-1.5 bg-blue-500 text-white rounded cursor-pointer"
@@ -80,6 +159,60 @@ const Products = () => {
                 >
                     Add Product
                 </button>
+            </div>
+
+            <div>
+                <table className="w-full border-collapse border border-gray-300 mt-4">
+                    <thead>
+                        <tr className="bg-gray-200">
+                            <th className="border border-gray-300 p-2">S NO</th>
+                            <th className="border border-gray-300 p-2">Product Name</th>
+                            <th className="border border-gray-300 p-2">Category Name</th>
+                            <th className="border border-gray-300 p-2">Supplier Name</th>
+                            <th className="border border-gray-300 p-2">Price</th>
+                            <th className="border border-gray-300 p-2">Stock</th>
+                            <th className="border border-gray-300 p-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {products.map((product, index) => (
+                            <tr key={product._id}>
+                                <td className="border border-gray-300 p-2">{index + 1}</td>
+                                <td className="border border-gray-300 p-2">{product.name}</td>
+                                <td className="border border-gray-300 p-2">{product.categoryId?.categoryName}</td>
+                                <td className="border border-gray-300 p-2">{product.supplierId?.name}</td>
+                                <td className="border border-gray-300 p-2">{product.price}</td>
+                                <td className="border border-gray-300 p-2">
+                                    <span className="rounded-full font-semibold">
+                                        {product.stock === 0 ? (
+                                            <span className="bg-red-100 text-red-500">{product.stock}</span>
+                                        ) : product.stock < 5 ? (
+                                            <span className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full">{product.stock}</span>
+                                        ) : (
+                                            <span className="bg-green-100 text-green-500 px-2 py-1 rounded-full">{product.stock}</span>
+                                        )}
+                                    </span>
+
+
+                                </td>
+                                <td className="border border-gray-300 p-2">
+                                    <button
+                                        className="px-2 py-1 bg-yellow-500 text-white rounded cursor-pointer mr-2"
+                                        onClick={() => handleEdit(product)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="px-2 py-1 bg-red-500 text-white rounded cursor-pointer"
+                                        onClick={() => handleDelete(product._id)} // ✅ supplier._id → product._id
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
             {openModal && (
@@ -99,30 +232,49 @@ const Products = () => {
                                 name="name"
                                 placeholder="Product Name"
                                 className="border p-1 bg-white rounded px-4"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
                             />
                             <input
                                 type="text"
                                 name="description"
                                 placeholder="Description"
                                 className="border p-1 bg-white rounded px-4"
+                                value={formData.description}
+                                onChange={handleChange}
+                                required
                             />
                             <input
                                 type="number"
                                 name="price"
                                 placeholder="Enter Price"
                                 className="border p-1 bg-white rounded px-4"
+                                value={formData.price}
+                                onChange={handleChange}
+                                required
                             />
                             <input
                                 type="number"
                                 name="stock"
                                 placeholder="Enter Stock"
                                 className="border p-1 bg-white rounded px-4"
+                                value={formData.stock}
+                                onChange={handleChange}
+                                required
                             />
 
+                            {/* Category Dropdown */}
                             <div className="w-full border">
-                                <select name="category" className="w-full p-2">
+                                <select
+                                    name="category"
+                                    className="w-full p-2"
+                                    value={formData.category}
+                                    onChange={handleChange}
+                                    required
+                                >
                                     <option value="">Select Category</option>
-                                    {categories && categories.map((category) => (
+                                    {categories.map((category) => (
                                         <option key={category._id} value={category._id}>
                                             {category.categoryName}
                                         </option>
@@ -130,12 +282,19 @@ const Products = () => {
                                 </select>
                             </div>
 
+                            {/* Supplier Dropdown */}
                             <div className="w-full border">
-                                <select name="supplier" className="w-full p-2">
+                                <select
+                                    name="supplier"
+                                    className="w-full p-2"
+                                    value={formData.supplier}
+                                    onChange={handleChange}
+                                    required
+                                >
                                     <option value="">Select Supplier</option>
-                                    {suppliers && suppliers.map((supplier) => (
+                                    {suppliers.map((supplier) => (
                                         <option key={supplier._id} value={supplier._id}>
-                                            {supplier.name}
+                                            {supplier.name || supplier.supplierName}
                                         </option>
                                     ))}
                                 </select>
@@ -165,9 +324,3 @@ const Products = () => {
 };
 
 export default Products;
-
-
-
-
-
-
