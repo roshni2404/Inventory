@@ -3,9 +3,11 @@ import axios from "axios";
 
 const Products = () => {
     const [openModal, setOpenModal] = useState(false);
+    const [editProduct, setEditProduct] = useState(null);
     const [categories, setCategories] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [products, setProducts] = useState([]); // ✅ products ka state
+    const [filteredProducts, setFilteredProducts ] = useState([]);
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -59,6 +61,7 @@ const Products = () => {
             });
             if (res.data.success) {
                 setProducts(res.data.products || []);
+                setFilteredProducts(res.data.products || []);
             }
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -80,51 +83,117 @@ const Products = () => {
         }));
     };
 
+    const handleEdit = (product) => {
+        setOpenModal(true);
+        setEditProduct(product._id);
+        setFormData({
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            stock: product.stock,
+            categoryId: product.categoryId.id,
+            supplierId: product.supplierId.id,
+        });
+    };
+    const closeModel = () => {
+        setOpenModal(false);
+        setEditProduct(null);
+        setFormData({
+            name: "",
+            description: "",
+            price: "",
+            stock: "",
+            categoryId: "",
+        })
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            // Backend schema ke field names ke according payload
-            const payload = {
-                name: formData.name,
-                description: formData.description,
-                price: Number(formData.price),
-                stock: Number(formData.stock),
-                categoryId: formData.category, // ✅ backend ke field ka naam
-                supplierId: formData.supplier, // ✅ backend ke field ka naam
-            };
 
-            const res = await axios.post(
-                "http://localhost:3000/api/products/add",
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
-                    },
+        if (editProduct) {
+            try {
+                const res = await axios.put(
+                    `http://localhost:3000/api/products/${editProduct}`,
+                    formData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
+                        },
+                    }
+                );
+                if (res.data.success) {
+                    alert("Product updated successfully!");
+                    fetchProducts();
+                    setOpenModal(false);
+                    setEditProduct(null);
+                    setFormData({
+                        name: "",
+                        description: "",
+                        price: "",
+                        stock: "",
+                        categoryId: "",
+                        supplierId: "",
+
+                    });
+                } else {
+                    alert("Error updating Product. Please try again.");
                 }
-            );
+            } catch (error) {
+                alert("Error updating Product. Please try again.");
+            }
+            return;
+        }
+        else {
 
-            if (res.data.success) {
-                alert("Product added successfully!");
-                setOpenModal(false);
-                setFormData({
-                    name: "",
-                    description: "",
-                    price: "",
-                    stock: "",
-                    category: "",
-                    supplier: "",
-                });
-                fetchProducts(); // ✅ product list refresh
-            } else {
+
+            try {
+                // Backend schema ke field names ke according payload
+                const payload = {
+                    name: formData.name,
+                    description: formData.description,
+                    price: Number(formData.price),
+                    stock: Number(formData.stock),
+                    categoryId: formData.category, // ✅ backend ke field ka naam
+                    supplierId: formData.supplier, // ✅ backend ke field ka naam
+                };
+
+                const res = await axios.post(
+                    "http://localhost:3000/api/products/add",
+                    payload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
+                        },
+                    }
+                );
+
+                if (res.data.success) {
+                    fetchProducts();
+                    alert("Product added successfully!");
+                    setOpenModal(false);
+                    setFormData({
+                        name: "",
+                        description: "",
+                        price: "",
+                        stock: "",
+                        category: "",
+                        supplier: "",
+                    });
+                    fetchProducts(); // ✅ product list refresh
+                } else {
+                    alert("Error adding product. Please try again.");
+                }
+            } catch (error) {
+                console.error("Add Product Error:", error);
                 alert("Error adding product. Please try again.");
             }
-        } catch (error) {
-            console.error("Add Product Error:", error);
-            alert("Error adding product. Please try again.");
         }
     };
 
     const handleDelete = async (id) => {
+        const confirmDelete = window.confirm(
+            "Are you sure you want to delete this Product?");
+            if(confirmDelete) {        
         try {
             const res = await axios.delete(
                 `http://localhost:3000/api/products/${id}`,
@@ -137,11 +206,25 @@ const Products = () => {
             if (res.data.success) {
                 alert("Product deleted successfully!");
                 fetchProducts();
+            } else {
+                console.error("Error deleting Product:", data);
+                alert("Error deleting Product. Please try again.")
+ 
             }
         } catch (error) {
-            console.error("Delete Product Error:", error);
+            console.error("Error deleting Product:", error);
+            alert("Error deleting Product. Please try again.")
         }
+    }
     };
+
+    const handleSearch = (e) => {
+        setFilteredProducts()
+        products.filter((product) =>
+            product.name.toLowerCase().includes(e.target.value.toLowerCase))
+
+
+    }
 
     return (
         <div className="w-full h-full flex flex-col gap-4 p-4">
@@ -152,6 +235,7 @@ const Products = () => {
                     type="text"
                     placeholder="Search"
                     className="border p-1 bg-white rounded px-4"
+                    onChange={handleSearch}
                 />
                 <button
                     className="px-4 py-1.5 bg-blue-500 text-white rounded cursor-pointer"
@@ -175,7 +259,7 @@ const Products = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {products.map((product, index) => (
+                        {filteredProducts && filteredProducts.map((product, index) => (
                             <tr key={product._id}>
                                 <td className="border border-gray-300 p-2">{index + 1}</td>
                                 <td className="border border-gray-300 p-2">{product.name}</td>
@@ -213,6 +297,7 @@ const Products = () => {
                         ))}
                     </tbody>
                 </table>
+                {filteredProducts.length === 0 && <div>No records</div>}
             </div>
 
             {openModal && (
@@ -221,7 +306,7 @@ const Products = () => {
                         <h1 className="text-xl font-bold">Add Product</h1>
                         <button
                             className="absolute top-4 right-4 font-bold text-lg cursor-pointer"
-                            onClick={() => setOpenModal(false)}
+                            onClick={closeModel}
                         >
                             X
                         </button>
@@ -257,6 +342,7 @@ const Products = () => {
                             <input
                                 type="number"
                                 name="stock"
+                                min="0"
                                 placeholder="Enter Stock"
                                 className="border p-1 bg-white rounded px-4"
                                 value={formData.stock}
@@ -305,11 +391,12 @@ const Products = () => {
                                     type="submit"
                                     className="w-full rounded-md bg-green-500 text-white p-3 cursor-pointer hover:bg-green-600"
                                 >
-                                    Add Product
+                                    {editProduct ? "Save Changes" : "Add Product"}
+
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setOpenModal(false)}
+                                    onClick={closeModel}
                                     className="w-full rounded-md bg-red-500 text-white p-3 cursor-pointer hover:bg-red-600"
                                 >
                                     Cancel
@@ -324,3 +411,9 @@ const Products = () => {
 };
 
 export default Products;
+
+
+
+
+
+
