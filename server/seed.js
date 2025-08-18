@@ -4,10 +4,10 @@ import connectDB from './db/connection.js';
 
 const register = async () => {
     try {
-        connectDB();
+       connectDB();
         const hashPassword = await bcrypt.hash("admin", 10);
         const newUser = new User({
-            name: "Admin",
+            name: "admin",
             email: "admin@gmail.com",
             password: hashPassword,
             address: "admin address",
@@ -22,3 +22,5 @@ const register = async () => {
 }
 
 register();
+
+

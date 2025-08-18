@@ -8,7 +8,7 @@ const addProduct = async (req, res) => {
         const { name, description, price, stock, categoryId, supplierId } = req.body;
 
 
-       
+
         const newProduct = new Product({
             name,
             description,
@@ -16,7 +16,7 @@ const addProduct = async (req, res) => {
             stock,
             categoryId,
             supplierId
-         });
+        });
         await newProduct.save();
         return res.status(201).json({ success: true, message: 'Product added successfully' });
     } catch (error) {
@@ -27,7 +27,7 @@ const addProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({isDeleted: false}).populate('categoryId').populate('supplierId');
+        const products = await Product.find({ isDeleted: false }).populate('categoryId').populate('supplierId');
         const suppliers = await Supplier.find();
         const categories = await Category.find();
         return res.status(200).json({ success: true, products, suppliers, categories });
@@ -58,7 +58,7 @@ const updateProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        return res.status(200).json({ success: true, message: 'Product updated successfully', product: updateProduct});
+        return res.status(200).json({ success: true, message: 'Product updated successfully', product: updateProduct });
 
 
     } catch (error) {
@@ -75,7 +75,7 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
-        if(existingProduct.isDeleted) {
+        if (existingProduct.isDeleted) {
             return res.status(400).json({ success: false, message: "Product already deleted" });
         }
 
