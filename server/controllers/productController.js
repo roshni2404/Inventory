@@ -1,13 +1,10 @@
-import Supplier from "../models/Supplier.js"
-import Category from "../models/Category.js"
-import Product from "../models/Product.js"
-
+import Supplier from "../models/Supplier.js";
+import Category from "../models/Category.js";
+import Product from "../models/Product.js";
 
 const addProduct = async (req, res) => {
     try {
         const { name, description, price, stock, categoryId, supplierId } = req.body;
-
-
 
         const newProduct = new Product({
             name,
@@ -25,11 +22,16 @@ const addProduct = async (req, res) => {
     }
 };
 
+// 🔹 Admin API
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({ isDeleted: false }).populate('categoryId').populate('supplierId');
+        const products = await Product.find({ isDeleted: false })
+            .populate('categoryId', "categoryName")   // ✅ FIXED
+            .populate('supplierId', "name");
+
         const suppliers = await Supplier.find();
-        const categories = await Category.find();
+        const categories = await Category.find({}, "categoryName");
+
         return res.status(200).json({ success: true, products, suppliers, categories });
     } catch (error) {
         console.error('Error fetching suppliers:', error);
@@ -37,35 +39,42 @@ const getProducts = async (req, res) => {
     }
 };
 
+// 🔹 Customer Public API
+const getPublicProducts = async (req, res) => {
+    try {
+        const products = await Product.find({ isDeleted: false })
+            .populate("categoryId", "categoryName");   // ✅ FIXED
+
+        const categories = await Category.find({}, "categoryName");
+
+        return res.status(200).json({ success: true, products, categories });
+    } catch (error) {
+        console.error("Error fetching public products:", error);
+        return res.status(500).json({ success: false, message: "Server error in getting public products" });
+    }
+};
 
 const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, price, stock, categoryId, supplierId } = req.body;
 
-        // update the product
-
-        const updateProduct = await Product.findByIdAndUpdate(id, {
-            name,
-            description,
-            price,
-            stock,
-            categoryId,
-            supplierId
-        }, { new: true });
+        const updateProduct = await Product.findByIdAndUpdate(
+            id,
+            { name, description, price, stock, categoryId, supplierId },
+            { new: true }
+        );
 
         if (!updateProduct) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
 
         return res.status(200).json({ success: true, message: 'Product updated successfully', product: updateProduct });
-
-
     } catch (error) {
         console.error('Error updating Product:', error);
         return res.status(500).json({ success: false, message: 'Server error' });
     }
-}
+};
 
 const deleteProduct = async (req, res) => {
     try {
@@ -87,8 +96,4 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-export { getProducts, addProduct, updateProduct, deleteProduct };
-
-
-
-
+export { getProducts, addProduct, updateProduct, deleteProduct, getPublicProducts };

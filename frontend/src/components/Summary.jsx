@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import axios from "axios";
+
 
 const Summary = () => {
     const [dashboardData, setDashboardData] = useState({
@@ -13,8 +15,8 @@ const Summary = () => {
 
     const [loading, setLoading] = useState(false);
 
-    const fetchDashboardData= async () => {
-        
+    const fetchDashboardData = async () => {
+
         try {
             setLoading(true);
             const res = await axios.get("http://localhost:3000/api/dashboard", {
@@ -22,8 +24,9 @@ const Summary = () => {
                     Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
                 }
             });
-            setDashboardData(res.data);
-        } catch(error) {
+           
+            setDashboardData(res.data.dashboardData);
+        } catch (error) {
             alert(error.message);
         } finally {
             setLoading(false);
@@ -34,7 +37,7 @@ const Summary = () => {
         fetchDashboardData();
     }, []);
 
-    if(loading) {
+    if (loading) {
         return <div>Loading ....</div>
     }
 
@@ -80,7 +83,7 @@ const Summary = () => {
                         </ul>
                     ) : (
                         <p className='text-gray-500'>No products out of stock.</p>
-                    
+
                     )}
                 </div>
                 <div className='bg-white p-4 rounded-lg shadow-md'>
@@ -109,7 +112,7 @@ const Summary = () => {
                             {dashboardData.outOfStock.map((product, index) => (
                                 <li key={index} className='text-gray-600'>
                                     {product.name}{" "}
-                                    <span className='text-gray-400'>({product.category.name})</span>
+                                    <span className='text-gray-400'>({product.categoryId.categoryName})</span>
                                 </li>
                             ))}
                         </ul>

@@ -46,7 +46,7 @@ const getUser = async (req, res) => {
         const userId = req.user._id;
 
         const user = await User.findById(userId).select('-password');
-        if(!user) {
+        if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
         return res.status(200).json({ success: true, user });
@@ -60,21 +60,21 @@ const getUser = async (req, res) => {
 const updateUserProfile = async (req, res) => {
     try {
         const userId = req.user._id;
-        const { name, email, address, password } = req.boody;
+        const { name, email, address, password } = req.body;
 
-        const updatedata = {name, email, address};
-        if(password && password.trim() !== '') {
+        const updatedata = { name, email, address };
+        if (password && password.trim() !== '') {
             const hashedPassword = await bcrypt.hash(password, 10);
             updatedata.password = hashedPassword;
         }
 
-        const user = await User.findByIdAndUpdate(userId, updatedata, {new: true }).select('-password'); 
-        if(!user) {
+        const user = await User.findByIdAndUpdate(userId, updatedata, { new: true }).select('-password');
+        if (!user) {
             return res.status(404).json({ success: false, message: `User not found` });
         }
-        
 
-       
+
+
         return res.status(200).json({ success: true, message: 'Profile updated successfully', user });
     } catch (error) {
         console.error(`Error updating profile:`, error);
@@ -89,7 +89,7 @@ const updateUserProfile = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const existingUser= await User.findById(id);
+        const existingUser = await User.findById(id);
 
         if (!existingUser) {
             return res.status(404).json({ success: false, message: 'User not found' });

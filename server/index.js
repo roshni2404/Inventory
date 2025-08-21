@@ -6,7 +6,7 @@ import categoryRoutes from './routes/category.js';
 import supplierRoutes from './routes/supplier.js';
 import productRoutes from './routes/product.js';
 import userRoutes from './routes/user.js';
-import orderRouter from './routes/order.js';
+import orderRoutes from './routes/order.js';
 import dashboardRouter from './routes/dashboard.js';
 
 const app = express();
@@ -18,10 +18,18 @@ app.use('/api/category', categoryRoutes);
 app.use('/api/supplier', supplierRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/orders', orderRouter);
+app.use('/api/orders', orderRoutes);
 app.use('/api/dashboard', dashboardRouter);
 
 connectDB();
-app.listen(process.env.PORT, () => {
-    console.log('Server is running on http://localhost:3000');
+// app.listen(process.env.PORT, () => {
+//     console.log('Server is running on http://localhost:3000');
+// });
+
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
+
