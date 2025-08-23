@@ -97,8 +97,11 @@ const Categories = () => {
                 setCategories(categories.filter((cat) => cat._id !== id));
             }
         } catch (error) {
-            console.error("Error deleting category:", error.response?.data || error);
+           if(error.response){
+            alert(error.response.data.message);
+           } else {
             alert("Error deleting category!");
+           }
         }
     };
 

@@ -7,12 +7,10 @@
 //         const { productId, quantity, total } = req.body;
 //         const userId = req.user._id;
 
-//         // ❌ गलती: Product.finallyId → 
-//         // ✅ सही: Product.findById
 //         const product = await Product.findById(productId);
 
 //         if (!product) {
-//             return res.status(404).json({ error: "Product not found in order" });
+//             return res.status(404).json({ error: "Product not found" });
 //         }
 
 //         // Stock check
@@ -20,11 +18,11 @@
 //             return res.status(400).json({ error: "Not enough stock" });
 //         }
 
-//         // Stock reduce
+//         // Reduce stock
 //         product.stock -= parseInt(quantity);
 //         await product.save();
 
-//         // New order
+//         // Create new order
 //         const orderObj = new Order({
 //             customer: userId,
 //             product: productId,
@@ -34,11 +32,9 @@
 
 //         await orderObj.save();
 
-//         // ❌ आपकी गलती: res.status(200)({...})
-//         // ✅ सही: res.status(200).json({...})
 //         return res.status(200).json({
 //             success: true,
-//             message: "Order added successfully",
+//             message: "Order placed successfully",
 //             order: orderObj,
 //         });
 
@@ -156,7 +152,7 @@ const getOrders = async (req, res) => {
             .populate({
                 path: "product",
                 populate: { path: "categoryId", select: "categoryName" },
-                select: "name price",
+                select: "name price stock",
             })
             .populate("customer", "name email");
 

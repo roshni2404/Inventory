@@ -1,11 +1,13 @@
-// import React, { useState, useEffect} from 'react';
-// import { FaBox, FaCog, FaHome, FaShoppingCart, FaSignOutAlt, FaTable, FaTruck, FaUsers } from 'react-icons/fa';
-// import { NavLink } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
+// import React, { useState, useEffect } from "react";
+// import { FaBox, FaCog, FaHome, FaShoppingCart, FaSignOutAlt, FaTable, FaTruck, FaUsers } from "react-icons/fa";
+// import { NavLink } from "react-router-dom";
+// import { useAuth } from "../context/AuthContext";
 
 // const Sidebar = () => {
+
+//     // Admin menu
 //     const menuItems = [
-//         { name: "Dashboard", path: "/admin-dashboard", icon: <FaHome />, exact: true },
+//         { name: "Dashboard", path: "/admin-dashboard", icon: <FaHome />  },
 //         { name: "Categories", path: "/admin-dashboard/categories", icon: <FaTable /> },
 //         { name: "Products", path: "/admin-dashboard/products", icon: <FaBox /> },
 //         { name: "Suppliers", path: "/admin-dashboard/suppliers", icon: <FaTruck /> },
@@ -15,28 +17,23 @@
 //         { name: "Logout", path: "/admin-dashboard/logout", icon: <FaSignOutAlt /> },
 //     ];
 
-
+//     // Customer menu
 //     const customerItems = [
-//         { name: "Products", path: "/customer-dashboard/products", icon: <FaBox /> },
-
-//         { name: "Orders", path: "/customer-dashboard/orders", icon: <FaShoppingCart /> },
-
-//         { name: "Profile", path: "/customer-dashboard/profile", icon: <FaCog /> },
-
-//         { name: "Logout", path: "/customer-dashboard/logout", icon: <FaSignOutAlt /> },
-
+//         { name: "Products", path: "/customer-dashboard", icon: <FaBox />, isParent: true },
+//         { name: "Orders", path: "/customer-dashboard/orders", icon: <FaShoppingCart />, isParent: false },
+//         { name: "Profile", path: "/customer-dashboard/profile", icon: <FaCog />, isParent: false },
+//         { name: "Logout", path: "/customer-dashboard/logout", icon: <FaSignOutAlt />, isParent: false },
 //     ];
-//     const {user} = useAuth();
+
+//     const { user } = useAuth();
 //     const [menuLinks, setMenuLinks] = useState(customerItems);
 
-//     useEffect(()=> {
-//         if(user && user.role === "admin") {
-//             setMenuLinks(menuItems);
-//         }
-
-//     }, [])
-
-
+//     useEffect(() => {
+     
+//     if (user && user.role === "admin") {
+//         setMenuLinks(menuItems);
+//     }
+// }, [])
 
 //     return (
 //         <div className="flex flex-col h-screen bg-black text-white w-16 md:w-64 fixed">
@@ -53,7 +50,7 @@
 //                         <li key={item.name}>
 //                             <NavLink
 //                                 to={item.path}
-//                                 end={item.exact}   // ✅ sirf exact path match hone par active
+//                                 end={item.exact}
 //                                 className={({ isActive }) =>
 //                                     `flex items-center space-x-3 p-2 rounded-md transition duration-200
 //                   ${isActive ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-800"}`
@@ -77,16 +74,30 @@
 
 
 
+
+
+
+
+
+
 import React, { useState, useEffect } from "react";
-import { FaBox, FaCog, FaHome, FaShoppingCart, FaSignOutAlt, FaTable, FaTruck, FaUsers } from "react-icons/fa";
+import {
+    FaBox,
+    FaCog,
+    FaHome,
+    FaShoppingCart,
+    FaSignOutAlt,
+    FaTable,
+    FaTruck,
+    FaUsers,
+} from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Sidebar = () => {
-
     // Admin menu
     const menuItems = [
-        { name: "Dashboard", path: "/admin-dashboard", icon: <FaHome />, exact: true },
+        { name: "Dashboard", path: "/admin-dashboard", icon: <FaHome /> },
         { name: "Categories", path: "/admin-dashboard/categories", icon: <FaTable /> },
         { name: "Products", path: "/admin-dashboard/products", icon: <FaBox /> },
         { name: "Suppliers", path: "/admin-dashboard/suppliers", icon: <FaTruck /> },
@@ -108,11 +119,10 @@ const Sidebar = () => {
     const [menuLinks, setMenuLinks] = useState(customerItems);
 
     useEffect(() => {
-     
-    if (user && user.role === "admin") {
-        setMenuLinks(menuItems);
-    }
-}, [])
+        if (user && user.role === "admin") {
+            setMenuLinks(menuItems);
+        }
+    }, [user]);
 
     return (
         <div className="flex flex-col h-screen bg-black text-white w-16 md:w-64 fixed">
@@ -129,7 +139,8 @@ const Sidebar = () => {
                         <li key={item.name}>
                             <NavLink
                                 to={item.path}
-                                end={item.exact}
+                                // ✅ Dashboard & Customer Products exact match only
+                                end={item.name === "Dashboard" || item.name === "Products"}
                                 className={({ isActive }) =>
                                     `flex items-center space-x-3 p-2 rounded-md transition duration-200
                   ${isActive ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-800"}`

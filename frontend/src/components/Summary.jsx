@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from "axios";
 
-
 const Summary = () => {
     const [dashboardData, setDashboardData] = useState({
         totalProducts: 0,
@@ -11,12 +10,11 @@ const Summary = () => {
         outOfStock: [],
         highestSaleProduct: null,
         lowStock: []
-    })
+    });
 
     const [loading, setLoading] = useState(false);
 
     const fetchDashboardData = async () => {
-
         try {
             setLoading(true);
             const res = await axios.get("http://localhost:3000/api/dashboard", {
@@ -24,14 +22,13 @@ const Summary = () => {
                     Authorization: `Bearer ${localStorage.getItem("pos-token")}`,
                 }
             });
-           
             setDashboardData(res.data.dashboardData);
         } catch (error) {
             alert(error.message);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         fetchDashboardData();
@@ -41,14 +38,12 @@ const Summary = () => {
         return <div>Loading ....</div>
     }
 
-
-
     return (
-        <div className="pl-1 pt-5">   {/* p-5 ko replace karke yaha sirf left aur top padding rakha */}
+        <div className="pl-1 pt-5">
             <h2 className="text-3xl font-bold">Dashboard</h2>
 
+            {/* Top Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-6">
-                {/* Total Products Card */}
                 <div className="bg-blue-500 text-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center">
                     <p className="text-lg font-semibold">Total Products</p>
                     <p className="text-2xl font-bold">{dashboardData.totalProducts}</p>
@@ -67,52 +62,53 @@ const Summary = () => {
                 </div>
             </div>
 
+            {/* Bottom Cards */}
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+
+                {/* Out of Stock */}
                 <div className='bg-white p-4 rounded-lg shadow-md'>
-                    <h3 className='text-xl font-semibold text-gray-800 mb-3'>
-                        Out of Stock Products
-                    </h3>
+                    <h3 className='text-xl font-semibold text-gray-800 mb-3'>Out of Stock Products</h3>
                     {dashboardData.outOfStock.length > 0 ? (
                         <ul className='space-y-2'>
                             {dashboardData.outOfStock.map((product, index) => (
                                 <li key={index} className='text-gray-600'>
-                                    {product.name}{" "}
-                                    <span className='text-gray-400'>({product.category.name})</span>
+                                    {product.name} - 0 left{" "}
+                                    <span className='text-gray-400'>
+                                        ({product.categoryId?.categoryName || "No Category"})
+                                    </span>
                                 </li>
                             ))}
                         </ul>
                     ) : (
                         <p className='text-gray-500'>No products out of stock.</p>
+                    )}
+                </div>
 
-                    )}
-                </div>
+                {/* Highest Sale Product */}
                 <div className='bg-white p-4 rounded-lg shadow-md'>
-                    <h3 className='text-xl font-semibold text-gray-800 mb-3'>
-                        Highest Sale Product
-                    </h3>
-                    {dashboardData.outOfStock.length > 0 ? (
-                        <ul className='space-y-2'>
-                            {dashboardData.outOfStock.map((product, index) => (
-                                <li key={index} className='text-gray-600'>
-                                    {product.name}{" "}
-                                    <span className='text-gray-400'>({product.category.name})</span>
-                                </li>
-                            ))}
-                        </ul>
+                    <h3 className='text-xl font-semibold text-gray-800 mb-3'>Highest Sale Product</h3>
+                    {dashboardData.highestSaleProduct && dashboardData.highestSaleProduct.name ? (
+                        <div className="text-gray-600">
+                            <p><span className="font-semibold">Name:</span> {dashboardData.highestSaleProduct.name}</p>
+                            <p><span className="font-semibold">Category:</span> {dashboardData.highestSaleProduct.categoryName || "No Category"}</p>
+                            <p><span className="font-semibold">Total Units Sold:</span> {dashboardData.highestSaleProduct.totalQuantity}</p>
+                        </div>
                     ) : (
-                        <p className='text-gray-500'>Loading...</p>
+                        <p className='text-gray-500'>No sales data yet.</p>
                     )}
                 </div>
+
+                {/* Low Stock Products */}
                 <div className='bg-white p-4 rounded-lg shadow-md'>
-                    <h3 className='text-xl font-semibold text-gray-800 mb-3'>
-                        Low Stock Products
-                    </h3>
-                    {dashboardData.outOfStock.length > 0 ? (
+                    <h3 className='text-xl font-semibold text-gray-800 mb-3'>Low Stock Products</h3>
+                    {dashboardData.lowStock.length > 0 ? (
                         <ul className='space-y-2'>
-                            {dashboardData.outOfStock.map((product, index) => (
+                            {dashboardData.lowStock.map((product, index) => (
                                 <li key={index} className='text-gray-600'>
-                                    {product.name}{" "}
-                                    <span className='text-gray-400'>({product.categoryId.categoryName})</span>
+                                    {product.name} - {product.stock} left{" "}
+                                    <span className='text-gray-400'>
+                                        ({product.categoryId?.categoryName || "No Category"})
+                                    </span>
                                 </li>
                             ))}
                         </ul>
@@ -121,12 +117,18 @@ const Summary = () => {
                     )}
                 </div>
             </div>
-
-
         </div>
-    )
-}
+    );
+};
 
-export default Summary
+export default Summary;
+
+
+
+
+
+
+
+
 
 

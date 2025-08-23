@@ -137,8 +137,11 @@ const Suppliers = () => {
                 alert("Error deleting Supplier. Please try again.")
             }
         } catch (error) {
-            console.error("Error deleting Supplier:", error);
-            alert("Error deleting Supplier. Please try again.");
+            if (error.response) {
+                alert(error.response.data.message);
+            } else {
+                alert("Error deleting supplier!");
+            }
         }
     };
 
@@ -243,3 +246,9 @@ const Suppliers = () => {
 };
 
 export default Suppliers;
+
+
+
+
+
+

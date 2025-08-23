@@ -4,15 +4,13 @@
 
 // const router = express.Router();
 
-// // ➡️ नया order add करने के लिए
+// // ➡️ Add new order
 // router.post("/add", authMiddleware, addOrder);
 
-// // ➡️ user के सारे orders fetch करने के लिए
-// router.get("/my-orders", authMiddleware, getOrders);
+// // ➡️ Get orders
+// router.get("/", authMiddleware, getOrders);
 
 // export default router;
-
-
 
 
 import express from "express";
@@ -22,7 +20,7 @@ import { addOrder, getOrders } from "../controllers/orderController.js";
 const router = express.Router();
 
 // ➡️ Add new order
-router.post("/", authMiddleware, addOrder);
+router.post("/add", authMiddleware, addOrder);
 
 // ➡️ Get orders
 router.get("/", authMiddleware, getOrders);
