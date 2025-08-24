@@ -6,9 +6,7 @@ const orderSchema = new mongoose.Schema({
     quantity: { type: Number, required: true },
     totalPrice: { type: Number, required: true },
     orderDate: { type: Date, default: Date.now }
-});
-const OrderModel = mongoose.model('Order' , orderSchema);
+}, { timestamps: true });  // ✅ yaha hona chahiye
+
+const OrderModel = mongoose.model('Order', orderSchema);
 export default OrderModel;
-
-
-
